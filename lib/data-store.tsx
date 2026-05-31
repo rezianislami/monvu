@@ -10,6 +10,7 @@ import {
 } from "react";
 import type { Asset, Goal } from "./types";
 import { GOLD_PRICE_PER_GRAM, resolveAsset } from "./system-prices";
+import { toast } from "@/components/ui/toast";
 
 // API-backed store. Same public interface as before so pages/components are
 // unchanged. Mutators call the route handlers and update local state from the
@@ -89,19 +90,42 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const addAsset = (data: AssetInput) => {
     jsonFetch<Asset>("/api/assets", { method: "POST", body: JSON.stringify(data) })
-      .then((created) => setRawAssets((prev) => [created, ...prev]))
+      .then((created) => {
+        setRawAssets((prev) => [created, ...prev]);
+        toast.add({
+          type: "success",
+          title: "Aset ditambahkan",
+          description: `"${created.name}" berhasil masuk ke portofolio.`,
+        });
+      })
       .catch((e) => console.error("Gagal menambah aset:", e));
   };
 
   const updateAsset = (id: string, data: AssetInput) => {
     jsonFetch<Asset>(`/api/assets/${id}`, { method: "PUT", body: JSON.stringify(data) })
-      .then((updated) => setRawAssets((prev) => prev.map((a) => (a.id === id ? updated : a))))
+      .then((updated) => {
+        setRawAssets((prev) => prev.map((a) => (a.id === id ? updated : a)));
+        toast.add({
+          type: "success",
+          title: "Aset diperbarui",
+          description: `Perubahan pada "${updated.name}" tersimpan.`,
+        });
+      })
       .catch((e) => console.error("Gagal mengubah aset:", e));
   };
 
   const deleteAsset = (id: string) => {
+    // Capture the name before the row is filtered out so the toast can name it.
+    const removed = rawAssets.find((a) => a.id === id);
     jsonFetch(`/api/assets/${id}`, { method: "DELETE" })
-      .then(() => setRawAssets((prev) => prev.filter((a) => a.id !== id)))
+      .then(() => {
+        setRawAssets((prev) => prev.filter((a) => a.id !== id));
+        toast.add({
+          type: "success",
+          title: "Aset dihapus",
+          description: removed ? `"${removed.name}" dihapus dari portofolio.` : undefined,
+        });
+      })
       .catch((e) => console.error("Gagal menghapus aset:", e));
   };
 
@@ -137,19 +161,41 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const addGoal = (data: GoalInput) => {
     jsonFetch<Goal>("/api/goals", { method: "POST", body: JSON.stringify(data) })
-      .then((created) => setGoals((prev) => [created, ...prev]))
+      .then((created) => {
+        setGoals((prev) => [created, ...prev]);
+        toast.add({
+          type: "success",
+          title: "Target ditambahkan",
+          description: `"${created.name}" berhasil dibuat.`,
+        });
+      })
       .catch((e) => console.error("Gagal menambah target:", e));
   };
 
   const updateGoal = (id: string, data: GoalInput) => {
     jsonFetch<Goal>(`/api/goals/${id}`, { method: "PUT", body: JSON.stringify(data) })
-      .then((updated) => setGoals((prev) => prev.map((g) => (g.id === id ? updated : g))))
+      .then((updated) => {
+        setGoals((prev) => prev.map((g) => (g.id === id ? updated : g)));
+        toast.add({
+          type: "success",
+          title: "Target diperbarui",
+          description: `Perubahan pada "${updated.name}" tersimpan.`,
+        });
+      })
       .catch((e) => console.error("Gagal mengubah target:", e));
   };
 
   const deleteGoal = (id: string) => {
+    const removed = goals.find((g) => g.id === id);
     jsonFetch(`/api/goals/${id}`, { method: "DELETE" })
-      .then(() => setGoals((prev) => prev.filter((g) => g.id !== id)))
+      .then(() => {
+        setGoals((prev) => prev.filter((g) => g.id !== id));
+        toast.add({
+          type: "success",
+          title: "Target dihapus",
+          description: removed ? `"${removed.name}" dihapus.` : undefined,
+        });
+      })
       .catch((e) => console.error("Gagal menghapus target:", e));
   };
 
