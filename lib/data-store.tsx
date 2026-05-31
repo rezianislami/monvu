@@ -10,6 +10,7 @@ import {
 } from "react";
 import type { Asset, Goal } from "./types";
 import { GOLD_PRICE_PER_GRAM, resolveAsset } from "./system-prices";
+import { toast } from "@/components/ui/toast";
 
 // API-backed store. Same public interface as before so pages/components are
 // unchanged. Mutators call the route handlers and update local state from the
@@ -89,7 +90,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const addAsset = (data: AssetInput) => {
     jsonFetch<Asset>("/api/assets", { method: "POST", body: JSON.stringify(data) })
-      .then((created) => setRawAssets((prev) => [created, ...prev]))
+      .then((created) => {
+        setRawAssets((prev) => [created, ...prev]);
+        toast.add({
+          type: "success",
+          title: "Aset ditambahkan",
+          description: `"${created.name}" berhasil masuk ke portofolio.`,
+        });
+      })
       .catch((e) => console.error("Gagal menambah aset:", e));
   };
 
@@ -137,7 +145,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const addGoal = (data: GoalInput) => {
     jsonFetch<Goal>("/api/goals", { method: "POST", body: JSON.stringify(data) })
-      .then((created) => setGoals((prev) => [created, ...prev]))
+      .then((created) => {
+        setGoals((prev) => [created, ...prev]);
+        toast.add({
+          type: "success",
+          title: "Target ditambahkan",
+          description: `"${created.name}" berhasil dibuat.`,
+        });
+      })
       .catch((e) => console.error("Gagal menambah target:", e));
   };
 
