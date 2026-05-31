@@ -1,0 +1,1 @@
+ALTER TABLE "user_settings" ALTER COLUMN "gold_price_per_gram" SET DEFAULT 2774000;
