@@ -1,0 +1,7 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- Monvu brand mark: pink rounded tile, dark border, white "M".
+       The M is the real Space Grotesk glyph (wght 700, matching the sidebar
+       logo) baked to a vector path so it renders identically without the font. -->
+  <rect x="3" y="3" width="58" height="58" rx="14" fill="#ff2d78" stroke="#1a0030" stroke-width="4" />
+  <path transform="translate(13.100 47.000) scale(0.04286 -0.04286)" fill="#ffffff" d="M66 0V700H311L432 90H450L571 700H816V0H688V603H670L550 0H332L212 603H194V0Z" />
+</svg>
