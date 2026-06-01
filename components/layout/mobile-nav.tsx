@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, Menu } from "lucide-react";
+import { BookOpen, Menu, MessageSquarePlus } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { FeedbackDialog } from "@/components/feedback/feedback-dialog";
 import { openOnboarding } from "@/components/onboarding/onboarding-modal";
 import { NAV_ITEMS } from "./nav-items";
 
@@ -19,6 +20,7 @@ import { NAV_ITEMS } from "./nav-items";
 export function MobileNav() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -72,8 +74,22 @@ export function MobileNav() {
             <BookOpen className="h-5 w-5 shrink-0" />
             <span>Panduan</span>
           </button>
+
+          <button
+            onClick={() => {
+              // Close the drawer first so it doesn't sit over the dialog.
+              setOpen(false);
+              setFeedbackOpen(true);
+            }}
+            className="flex w-full items-center gap-3 rounded-xl border-2 border-transparent px-3 py-2.5 font-mono text-xs font-bold uppercase tracking-wide text-[var(--nb-text-muted)] transition-colors hover:bg-[var(--nb-surface2)] hover:text-[var(--nb-text)]"
+          >
+            <MessageSquarePlus className="h-5 w-5 shrink-0" />
+            <span>Saran</span>
+          </button>
         </nav>
       </SheetContent>
+
+      <FeedbackDialog open={feedbackOpen} onOpenChange={setFeedbackOpen} />
     </Sheet>
   );
 }
