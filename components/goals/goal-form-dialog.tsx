@@ -20,8 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { GoalInput } from "@/lib/data-store";
+import { useData, type GoalInput } from "@/lib/data-store";
 import type { Goal } from "@/lib/types";
+import { formatRupiah, calculateTotalCurrentValue } from "@/lib/calculations";
 
 type GoalCategory = Goal["category"];
 
@@ -63,6 +64,19 @@ function GoalFields({
   const [target, setTarget] = useState(goal ? String(goal.target_amount) : "");
   const [current, setCurrent] = useState(goal ? String(goal.current_amount) : "");
   const [targetDate, setTargetDate] = useState(goal?.target_date ?? "");
+
+  // Allocation pool (Plan B): "terkumpul" is money allocated from total assets,
+  // shared across all goals. Exclude the goal being edited so its own amount
+  // doesn't count against itself. Over-allocation is a soft warning, not a block
+  // — the pool can shrink (market drop, asset deleted) below what's allocated.
+  const { assets, goals } = useData();
+  const totalAssets = calculateTotalCurrentValue(assets);
+  const allocatedElsewhere = goals
+    .filter((g) => g.id !== goal?.id)
+    .reduce((sum, g) => sum + g.current_amount, 0);
+  const remainingPool = totalAssets - allocatedElsewhere;
+  const currentNum = Number(current) || 0;
+  const overAllocated = currentNum > remainingPool;
 
   const valid = name.trim() !== "" && target !== "" && targetDate !== "";
 
@@ -150,6 +164,44 @@ function GoalFields({
               placeholder="0"
             />
           </div>
+        </div>
+
+        {/* Allocation pool: how much of total assets is still free to assign */}
+        <div className="grid gap-1.5 rounded-xl bg-secondary/40 p-3 text-xs">
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Total aset</span>
+            <span className="font-medium">{formatRupiah(totalAssets)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Dialokasikan ke target lain</span>
+            <span className="font-medium">{formatRupiah(allocatedElsewhere)}</span>
+          </div>
+          <div className="flex justify-between border-t border-border/50 pt-1.5">
+            <span className="text-muted-foreground">Tersisa bisa dialokasikan</span>
+            <span
+              className={`font-semibold ${
+                remainingPool < 0 ? "text-rose-400" : "text-foreground"
+              }`}
+            >
+              {formatRupiah(remainingPool)}
+            </span>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="mt-1 justify-self-start"
+            disabled={remainingPool <= 0}
+            onClick={() => setCurrent(String(Math.max(0, Math.round(remainingPool))))}
+          >
+            Alokasikan Semua
+          </Button>
+          {overAllocated && (
+            <p className="text-rose-400">
+              Melebihi sisa sebesar {formatRupiah(currentNum - remainingPool)}. Tetap bisa
+              disimpan, tapi total alokasi akan melampaui asetmu.
+            </p>
+          )}
         </div>
 
         <div className="grid gap-1.5">
