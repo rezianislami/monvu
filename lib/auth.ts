@@ -25,13 +25,18 @@ export const auth = betterAuth({
         },
       }
     : undefined,
-  // Link a Google sign-in to an existing email/password account with the same
-  // (verified) email instead of erroring on the duplicate. Google emails are
-  // verified, so "google" is safe to trust here.
+  // Linking stays enabled (for explicit, authenticated linkSocial later), but we
+  // deliberately DON'T list google as a trusted provider. Our email/password
+  // signup doesn't verify the email (requireEmailVerification: false), so
+  // auto-linking a Google login into an unverified credential account would be
+  // an account-takeover vector (attacker pre-registers a victim's email with a
+  // password they control). With google untrusted + the credential account
+  // unverified, a same-email Google sign-in fails with `account_not_linked`,
+  // which the login/signup pages surface as a clear message. Safe linking is
+  // done from an authenticated session instead (authClient.linkSocial).
   account: {
     accountLinking: {
       enabled: true,
-      trustedProviders: ["google"],
     },
   },
   secret: process.env.BETTER_AUTH_SECRET,

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { authClient } from "@/lib/auth-client";
+import { authClient, authErrorMessage } from "@/lib/auth-client";
 import { exitGuest } from "@/lib/guest";
 import {
   Card,
@@ -19,13 +19,17 @@ import { PasswordInput } from "@/components/common/password-input";
 import { GoogleIcon } from "@/components/common/google-icon";
 import { Separator } from "@/components/ui/separator";
 
-export default function SignupPage() {
+function SignupForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  // Seed from the OAuth callback's ?error= so a failed Google flow isn't silent.
+  const [error, setError] = useState<string | null>(() =>
+    authErrorMessage(searchParams.get("error"))
+  );
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -57,6 +61,7 @@ export default function SignupPage() {
     const { error } = await authClient.signIn.social({
       provider: "google",
       callbackURL: "/",
+      errorCallbackURL: "/signup",
     });
     if (error) {
       setLoading(false);
@@ -143,5 +148,14 @@ export default function SignupPage() {
         </form>
       </CardContent>
     </Card>
+  );
+}
+
+// useSearchParams requires a Suspense boundary in the app router.
+export default function SignupPage() {
+  return (
+    <Suspense>
+      <SignupForm />
+    </Suspense>
   );
 }

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { authClient } from "@/lib/auth-client";
+import { authClient, authErrorMessage } from "@/lib/auth-client";
 import { enterGuest, exitGuest } from "@/lib/guest";
 import {
   Card,
@@ -19,11 +19,16 @@ import { PasswordInput } from "@/components/common/password-input";
 import { GoogleIcon } from "@/components/common/google-icon";
 import { Separator } from "@/components/ui/separator";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  // Seed from the OAuth callback's ?error= (e.g. account_not_linked) so a failed
+  // Google sign-in that redirected back here isn't silent.
+  const [error, setError] = useState<string | null>(() =>
+    authErrorMessage(searchParams.get("error"))
+  );
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -57,6 +62,9 @@ export default function LoginPage() {
     const { error } = await authClient.signIn.social({
       provider: "google",
       callbackURL: "/",
+      // On callback failure (e.g. account_not_linked), come back here with
+      // ?error= so we can show a message instead of failing silently.
+      errorCallbackURL: "/login",
     });
     if (error) {
       setLoading(false);
@@ -130,5 +138,14 @@ export default function LoginPage() {
         </form>
       </CardContent>
     </Card>
+  );
+}
+
+// useSearchParams requires a Suspense boundary in the app router.
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }
