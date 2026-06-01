@@ -14,15 +14,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import {
-  Wallet,
-  Coins,
-  LineChart,
-  Landmark,
-  ScrollText,
-  Tag,
-  type LucideIcon,
-} from "lucide-react";
 import { getCategoryLabel, getEffectiveCategoryLabel } from "@/lib/calculations";
 import { useData } from "@/lib/data-store";
 import type { AssetCategory } from "@/lib/types";
@@ -36,17 +27,6 @@ interface Props {
 // absent: its rupiah value is static, so editing it under "Update Harga" is noise
 // — balance changes go through the asset's Edit form instead.
 const EDITABLE_ORDER: AssetCategory[] = ["stock", "money_market", "obligasi", "custom"];
-
-// Chip icons — mirror the filter icons on the assets page. Keyed by chip value
-// ("all"/"gold" aren't categories, so this isn't keyed off AssetCategory).
-const CHIP_ICONS: Record<string, LucideIcon> = {
-  all: Wallet,
-  gold: Coins,
-  stock: LineChart,
-  money_market: Landmark,
-  obligasi: ScrollText,
-  custom: Tag,
-};
 
 // Inner form remounted via `key` on open to seed inputs from current store data.
 function UpdatePricesFields({ onClose }: { onClose: () => void }) {
@@ -101,19 +81,17 @@ function UpdatePricesFields({ onClose }: { onClose: () => void }) {
         <div className="flex flex-wrap gap-1.5">
           {chips.map((c) => {
             const isActive = filter === c.value;
-            const Icon = CHIP_ICONS[c.value];
             return (
               <button
                 key={c.value}
                 type="button"
                 onClick={() => setFilter(c.value)}
-                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
                   isActive
                     ? "bg-primary/15 text-primary"
                     : "text-muted-foreground hover:bg-accent hover:text-foreground"
                 }`}
               >
-                {Icon && <Icon className="h-3.5 w-3.5" />}
                 {c.label}
               </button>
             );
