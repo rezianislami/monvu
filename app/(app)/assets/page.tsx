@@ -40,6 +40,7 @@ import { useData } from "@/lib/data-store";
 import {
   formatRupiah,
   formatDate,
+  daysSince,
   calculateProfitLoss,
   calculateReturn,
   calculateTotalModal,
@@ -61,6 +62,10 @@ const CATEGORIES: { value: AssetCategory | "all"; label: string; icon: typeof Wa
 ];
 
 type SortKey = "name" | "modal" | "current" | "pl" | "return" | "updated";
+
+// Assets whose value drifts (not gold/cash) get a nudge when not updated for a
+// while — reinforces the "update berkala" tip.
+const STALE_AFTER_DAYS = 30;
 
 function sortValue(a: Asset, key: SortKey): string | number {
   switch (key) {
@@ -288,6 +293,8 @@ export default function AssetsPage() {
                 {filtered.map((asset) => {
                   const pl = calculateProfitLoss(asset);
                   const ret = calculateReturn(asset);
+                  const updatable = asset.category !== "gold" && asset.category !== "cash";
+                  const stale = updatable && daysSince(asset.updated_at) > STALE_AFTER_DAYS;
                   return (
                     <tr
                       key={asset.id}
@@ -339,8 +346,18 @@ export default function AssetsPage() {
                         {ret >= 0 ? "+" : ""}
                         {ret.toFixed(1)}%
                       </td>
-                      <td className="py-3 px-4 text-right text-muted-foreground whitespace-nowrap">
-                        {formatDate(asset.updated_at)}
+                      <td className="py-3 px-4 text-right whitespace-nowrap">
+                        <div className="text-muted-foreground">
+                          {formatDate(asset.updated_at)}
+                        </div>
+                        {stale && (
+                          <div
+                            className="text-[10px] font-medium text-amber-500"
+                            title={`Belum diupdate ${daysSince(asset.updated_at)} hari`}
+                          >
+                            Perlu update
+                          </div>
+                        )}
                       </td>
                       <td className="py-3 px-2 text-right">
                         <DropdownMenu>

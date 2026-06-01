@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { getCategoryLabel, getEffectiveCategoryLabel } from "@/lib/calculations";
@@ -103,11 +103,10 @@ function UpdatePricesFields({ onClose }: { onClose: () => void }) {
         {showGold && (
           <div className="grid gap-1.5">
             <Label htmlFor="gold-price">Harga emas (Rp/gram)</Label>
-            <Input
+            <CurrencyInput
               id="gold-price"
-              type="number"
               value={gold}
-              onChange={(e) => setGold(e.target.value)}
+              onValueChange={setGold}
               placeholder="0"
             />
             <p className="text-xs text-muted-foreground">
@@ -130,12 +129,11 @@ function UpdatePricesFields({ onClose }: { onClose: () => void }) {
                       {getEffectiveCategoryLabel(a.category, a.custom_category)}
                     </Badge>
                   </div>
-                  <Input
-                    type="number"
+                  <CurrencyInput
                     className="w-32 shrink-0 sm:w-40"
                     value={values[a.id] ?? ""}
-                    onChange={(e) =>
-                      setValues((prev) => ({ ...prev, [a.id]: e.target.value }))
+                    onValueChange={(raw) =>
+                      setValues((prev) => ({ ...prev, [a.id]: raw }))
                     }
                     placeholder="0"
                   />

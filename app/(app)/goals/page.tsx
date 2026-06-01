@@ -23,11 +23,12 @@ import {
 import { GoalFormDialog } from "@/components/goals/goal-form-dialog";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { EmptyState } from "@/components/common/empty-state";
-import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import { useData } from "@/lib/data-store";
 import {
   formatRupiah,
+  calculateTotalCurrentValue,
   calculateGoalProgress,
   calculateGoalETA,
   calculateRequiredMonthlySaving,
@@ -66,6 +67,12 @@ export default function GoalsPage() {
   const fiNumber = calculateFINumber(expenseNum);
 
   const completedCount = goals.filter((g) => calculateGoalProgress(g) >= 100).length;
+
+  // Allocation pool (Plan B): assets are the pot, goals draw from it.
+  const totalAssetsValue = calculateTotalCurrentValue(assets);
+  const totalAllocated = goals.reduce((sum, g) => sum + g.current_amount, 0);
+  const unallocated = totalAssetsValue - totalAllocated;
+  const overAllocated = unallocated < 0;
 
   const stats = [
     {
@@ -128,11 +135,10 @@ export default function GoalsPage() {
             <Label htmlFor="monthly-expense" className="text-xs text-muted-foreground">
               Pengeluaran bulanan (Rp)
             </Label>
-            <Input
+            <CurrencyInput
               id="monthly-expense"
-              type="number"
               value={monthlyExpense}
-              onChange={(e) => setMonthlyExpense(e.target.value)}
+              onValueChange={setMonthlyExpense}
             />
           </div>
           <Button onClick={openAdd} className="w-full sm:w-auto">
@@ -162,6 +168,45 @@ export default function GoalsPage() {
           </Card>
         ))}
       </div>
+
+      {/* Allocation pool summary */}
+      {goals.length > 0 && (
+        <div
+          className={`flex flex-wrap items-center justify-between gap-x-6 gap-y-2 rounded-2xl border-2 px-4 py-3 text-sm ${
+            overAllocated
+              ? "border-rose-400/50 bg-rose-500/5"
+              : "border-[var(--nb-border)] bg-secondary/40"
+          }`}
+        >
+          <div className="flex flex-wrap gap-x-6 gap-y-1">
+            <span className="text-muted-foreground">
+              Total aset:{" "}
+              <span className="font-semibold text-foreground">
+                {formatRupiah(totalAssetsValue)}
+              </span>
+            </span>
+            <span className="text-muted-foreground">
+              Dialokasikan:{" "}
+              <span className="font-semibold text-foreground">
+                {formatRupiah(totalAllocated)}
+              </span>
+            </span>
+            <span className="text-muted-foreground">
+              Tersisa:{" "}
+              <span
+                className={`font-semibold ${overAllocated ? "text-rose-400" : "text-foreground"}`}
+              >
+                {formatRupiah(unallocated)}
+              </span>
+            </span>
+          </div>
+          {overAllocated && (
+            <span className="text-xs font-medium text-rose-400">
+              Alokasi melebihi total aset sebesar {formatRupiah(-unallocated)}.
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Goal detail cards */}
       {goals.length === 0 ? (

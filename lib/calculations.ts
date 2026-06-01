@@ -169,6 +169,13 @@ export function getCategoryColor(category: string): string {
   return colors[category] || "#9ca3af";
 }
 
+// Whole days between a YYYY-MM-DD date and today (local). Negative = future.
+export function daysSince(dateStr: string): number {
+  const then = new Date(dateStr + "T00:00:00");
+  const now = new Date();
+  return Math.floor((now.getTime() - then.getTime()) / 86_400_000);
+}
+
 export function projectGrowth(
   currentValue: number,
   monthlyContribution: number,

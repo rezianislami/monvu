@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -77,6 +78,11 @@ function GoalFields({
   const remainingPool = totalAssets - allocatedElsewhere;
   const currentNum = Number(current) || 0;
   const overAllocated = currentNum > remainingPool;
+
+  // Guardrails (soft): flag a past target date and a terkumpul above the target.
+  const today = new Date().toISOString().slice(0, 10);
+  const overTarget = target !== "" && currentNum > (Number(target) || 0);
+  const pastDate = targetDate !== "" && targetDate < today;
 
   const valid = name.trim() !== "" && target !== "" && targetDate !== "";
 
@@ -146,25 +152,29 @@ function GoalFields({
         <div className="grid grid-cols-2 gap-3">
           <div className="grid gap-1.5">
             <Label htmlFor="goal-target">Target (Rp)</Label>
-            <Input
+            <CurrencyInput
               id="goal-target"
-              type="number"
               value={target}
-              onChange={(e) => setTarget(e.target.value)}
+              onValueChange={setTarget}
               placeholder="0"
             />
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor="goal-current">Terkumpul (Rp)</Label>
-            <Input
+            <CurrencyInput
               id="goal-current"
-              type="number"
               value={current}
-              onChange={(e) => setCurrent(e.target.value)}
+              onValueChange={setCurrent}
               placeholder="0"
             />
           </div>
         </div>
+
+        {overTarget && (
+          <p className="text-xs text-amber-500">
+            Terkumpul melebihi target — target ini sudah tercapai.
+          </p>
+        )}
 
         {/* Allocation pool: how much of total assets is still free to assign */}
         <div className="grid gap-1.5 rounded-xl bg-secondary/40 p-3 text-xs">
@@ -209,9 +219,15 @@ function GoalFields({
           <Input
             id="goal-date"
             type="date"
+            min={today}
             value={targetDate}
             onChange={(e) => setTargetDate(e.target.value)}
           />
+          {pastDate && (
+            <p className="text-xs text-amber-500">
+              Tanggal target sudah lewat — pilih tanggal di masa depan.
+            </p>
+          )}
         </div>
       </div>
 

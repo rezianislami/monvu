@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -188,11 +189,10 @@ function AssetFields({
               </div>
               <div className="grid gap-1.5">
                 <Label htmlFor="asset-buy">Harga/gram beli (Rp)</Label>
-                <Input
+                <CurrencyInput
                   id="asset-buy"
-                  type="number"
                   value={buyUnitPrice}
-                  onChange={(e) => setBuyUnitPrice(e.target.value)}
+                  onValueChange={setBuyUnitPrice}
                   placeholder="0"
                 />
               </div>
@@ -228,11 +228,10 @@ function AssetFields({
         ) : isCash ? (
           <div className="grid gap-1.5">
             <Label htmlFor="asset-amount">Jumlah (Rp)</Label>
-            <Input
+            <CurrencyInput
               id="asset-amount"
-              type="number"
               value={current}
-              onChange={(e) => setCurrent(e.target.value)}
+              onValueChange={setCurrent}
               placeholder="0"
             />
           </div>
@@ -240,21 +239,19 @@ function AssetFields({
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-1.5">
               <Label htmlFor="asset-modal">Modal (Rp)</Label>
-              <Input
+              <CurrencyInput
                 id="asset-modal"
-                type="number"
                 value={purchase}
-                onChange={(e) => setPurchase(e.target.value)}
+                onValueChange={setPurchase}
                 placeholder="0"
               />
             </div>
             <div className="grid gap-1.5">
               <Label htmlFor="asset-current">Nilai Saat Ini (Rp)</Label>
-              <Input
+              <CurrencyInput
                 id="asset-current"
-                type="number"
                 value={current}
-                onChange={(e) => setCurrent(e.target.value)}
+                onValueChange={setCurrent}
                 placeholder="0"
               />
             </div>
