@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/common/password-input";
+import { GoogleIcon } from "@/components/common/google-icon";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -44,6 +45,22 @@ export default function LoginPage() {
     enterGuest();
     router.push("/");
     router.refresh();
+  };
+
+  const handleGoogle = async () => {
+    setError(null);
+    setLoading(true);
+    // Leaving for Google's consent screen — drop any guest flag first. On
+    // success the browser is redirected to callbackURL, so no router.push here.
+    exitGuest();
+    const { error } = await authClient.signIn.social({
+      provider: "google",
+      callbackURL: "/",
+    });
+    if (error) {
+      setLoading(false);
+      setError(error.message ?? "Gagal masuk dengan Google");
+    }
   };
 
   return (
@@ -78,6 +95,16 @@ export default function LoginPage() {
           {error && <p className="text-sm text-rose-400">{error}</p>}
           <Button type="submit" disabled={loading} className="w-full">
             {loading ? "Memproses…" : "Masuk"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleGoogle}
+            disabled={loading}
+            className="w-full"
+          >
+            <GoogleIcon className="h-4 w-4" />
+            Lanjut dengan Google
           </Button>
           <Button
             type="button"
