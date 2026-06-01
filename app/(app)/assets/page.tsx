@@ -8,6 +8,7 @@ import {
   LineChart,
   Landmark,
   ScrollText,
+  Banknote,
   Tag,
   TrendingUp,
   TrendingDown,
@@ -34,6 +35,7 @@ import { AssetFormDialog } from "@/components/assets/asset-form-dialog";
 import { UpdatePricesDialog } from "@/components/assets/update-prices-dialog";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { EmptyState } from "@/components/common/empty-state";
+import { InfoCallout } from "@/components/common/info-callout";
 import { useData } from "@/lib/data-store";
 import {
   formatRupiah,
@@ -53,6 +55,7 @@ const CATEGORIES: { value: AssetCategory | "all"; label: string; icon: typeof Wa
   { value: "gold", label: "Emas", icon: Coins },
   { value: "stock", label: "Saham", icon: LineChart },
   { value: "money_market", label: "Pasar Uang", icon: Landmark },
+  { value: "cash", label: "Uang Cash", icon: Banknote },
   { value: "obligasi", label: "Obligasi", icon: ScrollText },
   { value: "custom", label: "Custom", icon: Tag },
 ];
@@ -138,7 +141,7 @@ export default function AssetsPage() {
   // Per-category summary cards (always over the full set, not the filter).
   // Custom assets are heterogeneous so they're excluded from the class summary.
   const categorySummary = (
-    ["gold", "stock", "money_market", "obligasi"] as AssetCategory[]
+    ["gold", "stock", "money_market", "cash", "obligasi"] as AssetCategory[]
   ).map((cat) => {
     const items = assets.filter((a) => a.category === cat);
     const modal = calculateTotalModal(items);
@@ -193,8 +196,15 @@ export default function AssetsPage() {
         </div>
       </div>
 
+      {/* Price-update tip — dismissible, persisted per browser */}
+      <InfoCallout storageKey="monvu.assets.priceTip">
+        <strong>Klik &quot;Update Harga&quot; secara berkala</strong> biar profit/loss-mu akurat.
+        Lihat harga terkini di aplikasi tempat kamu beli (Bibit, Stockbit, Pluang). Emas update
+        otomatis.
+      </InfoCallout>
+
       {/* Category summary */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-children">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 stagger-children">
         {categorySummary.map((c) => (
           <Card key={c.cat} className="glass-card border-border/50 rounded-2xl">
             <CardContent className="p-5">

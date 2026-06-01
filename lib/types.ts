@@ -1,4 +1,10 @@
-export type AssetCategory = "gold" | "stock" | "money_market" | "obligasi" | "custom";
+export type AssetCategory =
+  | "gold"
+  | "stock"
+  | "money_market"
+  | "obligasi"
+  | "cash"
+  | "custom";
 
 export interface Asset {
   id: string;

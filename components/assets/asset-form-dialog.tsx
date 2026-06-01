@@ -28,6 +28,7 @@ const CATEGORIES: AssetCategory[] = [
   "gold",
   "stock",
   "money_market",
+  "cash",
   "obligasi",
   "custom",
 ];
@@ -70,6 +71,8 @@ function AssetFields({
   );
 
   const isGold = category === "gold";
+  // Cash has no gain/loss — a single amount, not a modal/nilai pair.
+  const isCash = category === "cash";
 
   // Gold derived preview from the live global price.
   const qtyNum = Number(quantity) || 0;
@@ -81,7 +84,11 @@ function AssetFields({
   const valid =
     name.trim() !== "" &&
     (category === "custom" ? customCategory.trim() !== "" : true) &&
-    (isGold ? quantity !== "" && buyUnitPrice !== "" : purchase !== "" && current !== "");
+    (isGold
+      ? quantity !== "" && buyUnitPrice !== ""
+      : isCash
+      ? current !== ""
+      : purchase !== "" && current !== "");
 
   const handleSubmit = () => {
     if (!valid) return;
@@ -98,12 +105,14 @@ function AssetFields({
     } else {
       // Stock symbols normalized to uppercase for tidy display.
       const finalName = category === "stock" ? name.trim().toUpperCase() : name.trim();
+      // Cash: the single amount is both modal and nilai sekarang (P/L = 0).
+      const currentVal = Number(current) || 0;
       onSubmit({
         name: finalName,
         category,
         custom_category: category === "custom" ? customCategory.trim() : undefined,
-        purchase_value: Number(purchase) || 0,
-        current_value: Number(current) || 0,
+        purchase_value: isCash ? currentVal : Number(purchase) || 0,
+        current_value: currentVal,
       });
     }
   };
@@ -157,6 +166,8 @@ function AssetFields({
                 ? "mis. BBCA"
                 : category === "gold"
                 ? "mis. Antam 10 gram"
+                : category === "cash"
+                ? "mis. Tabungan BCA, Dompet"
                 : "mis. Bibit RDPU"
             }
           />
@@ -214,6 +225,17 @@ function AssetFields({
               </div>
             </div>
           </>
+        ) : isCash ? (
+          <div className="grid gap-1.5">
+            <Label htmlFor="asset-amount">Jumlah (Rp)</Label>
+            <Input
+              id="asset-amount"
+              type="number"
+              value={current}
+              onChange={(e) => setCurrent(e.target.value)}
+              placeholder="0"
+            />
+          </div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-1.5">

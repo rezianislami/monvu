@@ -57,10 +57,10 @@ export default function GoalsPage() {
 
   const overall = calculateOverallGoalCompletion(goals);
 
-  // Emergency fund coverage uses the liquid reserve. Cash was removed, so we
-  // treat money market (pasar uang) as the emergency vehicle.
+  // Emergency fund coverage uses the liquid reserve: cash + money market (pasar
+  // uang) — the two most liquid vehicles.
   const cashReserve = assets
-    .filter((a) => a.category === "money_market")
+    .filter((a) => a.category === "cash" || a.category === "money_market")
     .reduce((sum, a) => sum + a.current_value, 0);
   const efCoverage = calculateEmergencyFundCoverage(cashReserve, expenseNum);
   const fiNumber = calculateFINumber(expenseNum);

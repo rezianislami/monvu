@@ -4,7 +4,7 @@ type AssetRow = typeof asset.$inferSelect;
 type GoalRow = typeof goal.$inferSelect;
 type FeedbackRow = typeof feedback.$inferSelect;
 
-const ASSET_CATEGORIES = ["gold", "stock", "money_market", "obligasi", "custom"] as const;
+const ASSET_CATEGORIES = ["gold", "stock", "money_market", "obligasi", "cash", "custom"] as const;
 const GOAL_CATEGORIES = ["kpr", "car", "emergency", "pension", "custom"] as const;
 const FEEDBACK_CATEGORIES = ["saran", "masalah", "pujian"] as const;
 

@@ -75,6 +75,9 @@ export const assetCategory = pgEnum("asset_category", [
   "money_market",
   "obligasi",
   "custom",
+  // Appended (not inserted) so the migration is a plain ADD VALUE; display
+  // order lives in the FE category arrays, not here.
+  "cash",
 ]);
 export const goalCategory = pgEnum("goal_category", [
   "kpr",

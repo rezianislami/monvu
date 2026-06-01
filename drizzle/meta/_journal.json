@@ -29,6 +29,13 @@
       "when": 1780281855109,
       "tag": "0003_spooky_blob",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1780284702006,
+      "tag": "0004_complex_vengeance",
+      "breakpoints": true
     }
   ]
 }

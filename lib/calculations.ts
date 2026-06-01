@@ -141,6 +141,7 @@ export function getCategoryLabel(category: string): string {
     stock: "Saham",
     money_market: "Pasar Uang",
     obligasi: "Obligasi",
+    cash: "Uang Cash",
     custom: "Custom",
   };
   return labels[category] || category;
@@ -162,6 +163,7 @@ export function getCategoryColor(category: string): string {
     stock: "#ec4899", // pink-500
     money_market: "#a78bfa", // violet-400
     obligasi: "#d946ef", // fuchsia-500
+    cash: "#2dd4bf", // teal-400 — distinct from the pinks, reads as "money"
     custom: "#f472b6", // pink-400
   };
   return colors[category] || "#9ca3af";

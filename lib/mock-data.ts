@@ -76,6 +76,16 @@ export const mockAssets: Asset[] = [
     created_at: "2024-06-15",
     updated_at: "2026-05-01",
   },
+  // Cash — no gain/loss, so modal == nilai sekarang.
+  {
+    id: "asset-10",
+    name: "Tabungan BCA",
+    category: "cash",
+    purchase_value: 15000000,
+    current_value: 15000000,
+    created_at: "2024-01-01",
+    updated_at: "2026-05-25",
+  },
 ];
 
 export const mockGoals: Goal[] = [
