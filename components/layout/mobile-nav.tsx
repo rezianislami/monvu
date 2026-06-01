@@ -23,6 +23,10 @@ export function MobileNav() {
   const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   return (
+    // FeedbackDialog must live OUTSIDE <Sheet>: base-ui treats a Dialog nested
+    // inside another Dialog (the Sheet) as a child dialog and suppresses its
+    // backdrop, so the feedback modal showed up with no overlay.
+    <>
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger
         render={<Button variant="ghost" size="icon" className="lg:hidden" />}
@@ -88,8 +92,9 @@ export function MobileNav() {
           </button>
         </nav>
       </SheetContent>
-
-      <FeedbackDialog open={feedbackOpen} onOpenChange={setFeedbackOpen} />
     </Sheet>
+
+    <FeedbackDialog open={feedbackOpen} onOpenChange={setFeedbackOpen} />
+    </>
   );
 }
