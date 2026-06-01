@@ -29,6 +29,9 @@ export interface FeedbackInput {
 
 interface DataContextValue {
   isGuest: boolean;
+  // True while the initial API load is in flight (non-guests only). Lets the UI
+  // show a shimmer instead of rendering real components with empty data (Rp0).
+  loading: boolean;
   assets: Asset[];
   goals: Goal[];
   goldPricePerGram: number;
@@ -76,6 +79,8 @@ export function DataProvider({
   const [goals, setGoals] = useState<Goal[]>(() => (isGuest ? mockGoals : []));
   const [goldPricePerGram, setGoldPriceState] = useState<number>(GOLD_PRICE_PER_GRAM);
   const [pricesUpdatedAt, setPricesUpdatedAt] = useState<string>("");
+  // Guests already hold seeded data (lazy init), so they're never "loading".
+  const [loading, setLoading] = useState(!isGuest);
 
   // In guest mode every write is blocked — bounce to /signup instead of calling
   // the API. Returns true when blocked so mutators can early-return.
@@ -108,6 +113,11 @@ export function DataProvider({
         setPricesUpdatedAt(s.prices_updated_at ?? "");
       } catch (err) {
         console.error("Gagal memuat data:", err);
+      } finally {
+        // setState after await (not synchronous in the effect body) — fine, and
+        // we always clear loading so an error shows the page (empty states), not
+        // an endless shimmer.
+        if (active) setLoading(false);
       }
     })();
     return () => {
@@ -264,6 +274,7 @@ export function DataProvider({
     <DataContext.Provider
       value={{
         isGuest,
+        loading,
         assets: resolvedAssets,
         goals,
         goldPricePerGram,

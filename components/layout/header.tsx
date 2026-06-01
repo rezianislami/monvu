@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { formatRupiah, calculateNetWorth } from "@/lib/calculations";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useData } from "@/lib/data-store";
 import { authClient } from "@/lib/auth-client";
 import { exitGuest } from "@/lib/guest";
@@ -25,7 +26,7 @@ function initials(name: string): string {
 
 export function Header() {
   const router = useRouter();
-  const { assets, isGuest } = useData();
+  const { assets, isGuest, loading } = useData();
   const { data: session } = authClient.useSession();
   // No liabilities tracked — net worth = total current value.
   const netWorth = calculateNetWorth(assets, []);
@@ -61,9 +62,13 @@ export function Header() {
             <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-[var(--nb-text-muted)]">
               Net Worth
             </span>
-            <span className="font-display text-sm font-extrabold text-[var(--nb-pink)]">
-              {formatRupiah(netWorth)}
-            </span>
+            {loading ? (
+              <Skeleton className="h-5 w-24" />
+            ) : (
+              <span className="font-display text-sm font-extrabold text-[var(--nb-pink)]">
+                {formatRupiah(netWorth)}
+              </span>
+            )}
           </div>
 
           <DropdownMenu>

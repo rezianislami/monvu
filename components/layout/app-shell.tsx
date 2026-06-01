@@ -7,13 +7,14 @@ import { cn } from "@/lib/utils";
 import { useData } from "@/lib/data-store";
 import { Sidebar } from "./sidebar";
 import { Header } from "./header";
+import { PageSkeleton } from "./page-skeleton";
 
 // Owns the sidebar collapsed state so the main content margin tracks the
 // sidebar width (240px ↔ 72px) — otherwise content keeps a 240px gap when
 // the sidebar is collapsed.
 export function AppShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
-  const { isGuest } = useData();
+  const { isGuest, loading } = useData();
 
   return (
     <div className="flex min-h-screen">
@@ -39,7 +40,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Link>
           </div>
         )}
-        <main className="min-w-0 flex-1 p-4 sm:p-6">{children}</main>
+        <main className="min-w-0 flex-1 p-4 sm:p-6">
+          {loading ? <PageSkeleton /> : children}
+        </main>
       </div>
     </div>
   );
