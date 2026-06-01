@@ -8,8 +8,10 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useRouter } from "next/navigation";
 import type { Asset, Goal } from "./types";
 import { GOLD_PRICE_PER_GRAM, resolveAsset } from "./system-prices";
+import { mockAssets, mockGoals } from "./mock-data";
 import { toast } from "@/components/ui/toast";
 
 // API-backed store. Same public interface as before so pages/components are
@@ -21,6 +23,7 @@ export type AssetInput = Omit<Asset, "id" | "created_at" | "updated_at">;
 export type GoalInput = Omit<Goal, "id">;
 
 interface DataContextValue {
+  isGuest: boolean;
   assets: Asset[];
   goals: Goal[];
   goldPricePerGram: number;
@@ -49,16 +52,37 @@ async function jsonFetch<T>(input: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-export function DataProvider({ children }: { children: ReactNode }) {
+export function DataProvider({
+  children,
+  isGuest = false,
+}: {
+  children: ReactNode;
+  isGuest?: boolean;
+}) {
+  const router = useRouter();
   // Raw assets from the API. For gold, purchase/current are placeholders that
-  // get derived on read from the global gold price.
-  const [rawAssets, setRawAssets] = useState<Asset[]>([]);
-  const [goals, setGoals] = useState<Goal[]>([]);
+  // get derived on read from the global gold price. Guests are seeded from the
+  // static sample data via lazy init (isGuest is a stable prop) — doing it here
+  // instead of in an effect avoids a synchronous setState-in-effect cascade.
+  const [rawAssets, setRawAssets] = useState<Asset[]>(() => (isGuest ? mockAssets : []));
+  const [goals, setGoals] = useState<Goal[]>(() => (isGuest ? mockGoals : []));
   const [goldPricePerGram, setGoldPriceState] = useState<number>(GOLD_PRICE_PER_GRAM);
   const [pricesUpdatedAt, setPricesUpdatedAt] = useState<string>("");
 
-  // Initial load.
+  // In guest mode every write is blocked — bounce to /signup instead of calling
+  // the API. Returns true when blocked so mutators can early-return.
+  const blockGuestWrite = () => {
+    if (isGuest) {
+      router.push("/signup");
+      return true;
+    }
+    return false;
+  };
+
+  // Initial load. Guests already hold the seeded sample data (lazy init above)
+  // and have no session, so skip the fetch entirely. Gold price stays default.
   useEffect(() => {
+    if (isGuest) return;
     let active = true;
     (async () => {
       try {
@@ -81,7 +105,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [isGuest]);
 
   const resolvedAssets = useMemo(
     () => rawAssets.map((a) => resolveAsset(a, goldPricePerGram)),
@@ -89,6 +113,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   );
 
   const addAsset = (data: AssetInput) => {
+    if (blockGuestWrite()) return;
     jsonFetch<Asset>("/api/assets", { method: "POST", body: JSON.stringify(data) })
       .then((created) => {
         setRawAssets((prev) => [created, ...prev]);
@@ -102,6 +127,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   const updateAsset = (id: string, data: AssetInput) => {
+    if (blockGuestWrite()) return;
     jsonFetch<Asset>(`/api/assets/${id}`, { method: "PUT", body: JSON.stringify(data) })
       .then((updated) => {
         setRawAssets((prev) => prev.map((a) => (a.id === id ? updated : a)));
@@ -115,6 +141,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   const deleteAsset = (id: string) => {
+    if (blockGuestWrite()) return;
     // Capture the name before the row is filtered out so the toast can name it.
     const removed = rawAssets.find((a) => a.id === id);
     jsonFetch(`/api/assets/${id}`, { method: "DELETE" })
@@ -130,6 +157,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   const setAssetCurrentValue = (id: string, value: number) => {
+    if (blockGuestWrite()) return;
     const a = rawAssets.find((x) => x.id === id);
     if (!a) return;
     const payload: AssetInput = {
@@ -148,6 +176,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   const setGoldPricePerGram = (price: number) => {
+    if (blockGuestWrite()) return;
     jsonFetch<{ gold_price_per_gram: number; prices_updated_at: string | null }>(
       "/api/settings",
       { method: "PUT", body: JSON.stringify({ gold_price_per_gram: price }) }
@@ -160,6 +189,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   const addGoal = (data: GoalInput) => {
+    if (blockGuestWrite()) return;
     jsonFetch<Goal>("/api/goals", { method: "POST", body: JSON.stringify(data) })
       .then((created) => {
         setGoals((prev) => [created, ...prev]);
@@ -173,6 +203,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   const updateGoal = (id: string, data: GoalInput) => {
+    if (blockGuestWrite()) return;
     jsonFetch<Goal>(`/api/goals/${id}`, { method: "PUT", body: JSON.stringify(data) })
       .then((updated) => {
         setGoals((prev) => prev.map((g) => (g.id === id ? updated : g)));
@@ -186,6 +217,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   const deleteGoal = (id: string) => {
+    if (blockGuestWrite()) return;
     const removed = goals.find((g) => g.id === id);
     jsonFetch(`/api/goals/${id}`, { method: "DELETE" })
       .then(() => {
@@ -202,6 +234,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   return (
     <DataContext.Provider
       value={{
+        isGuest,
         assets: resolvedAssets,
         goals,
         goldPricePerGram,

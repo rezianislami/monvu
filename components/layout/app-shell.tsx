@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import Link from "next/link";
+import { Info } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useData } from "@/lib/data-store";
 import { Sidebar } from "./sidebar";
 import { Header } from "./header";
 
@@ -10,6 +13,7 @@ import { Header } from "./header";
 // the sidebar is collapsed.
 export function AppShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
+  const { isGuest } = useData();
 
   return (
     <div className="flex min-h-screen">
@@ -24,6 +28,17 @@ export function AppShell({ children }: { children: ReactNode }) {
         )}
       >
         <Header />
+        {isGuest && (
+          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 border-b-[2.5px] border-[var(--nb-border)] bg-[var(--nb-yellow,#fde047)]/90 px-4 py-2 text-center text-xs font-medium text-black">
+            <span className="inline-flex items-center gap-1.5">
+              <Info className="h-3.5 w-3.5" />
+              Mode tamu — data ini contoh dan tidak tersimpan.
+            </span>
+            <Link href="/signup" className="font-bold underline underline-offset-2">
+              Daftar untuk simpan data
+            </Link>
+          </div>
+        )}
         <main className="min-w-0 flex-1 p-4 sm:p-6">{children}</main>
       </div>
     </div>

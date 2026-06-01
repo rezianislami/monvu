@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
+import { enterGuest, exitGuest } from "@/lib/guest";
 import {
   Card,
   CardContent,
@@ -33,6 +34,14 @@ export default function LoginPage() {
       setError(error.message ?? "Email atau password salah");
       return;
     }
+    // Drop any guest flag so the real session takes over.
+    exitGuest();
+    router.push("/");
+    router.refresh();
+  };
+
+  const handleGuest = () => {
+    enterGuest();
     router.push("/");
     router.refresh();
   };
@@ -69,6 +78,15 @@ export default function LoginPage() {
           {error && <p className="text-sm text-rose-400">{error}</p>}
           <Button type="submit" disabled={loading} className="w-full">
             {loading ? "Memproses…" : "Masuk"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleGuest}
+            disabled={loading}
+            className="w-full"
+          >
+            Masuk sebagai Tamu
           </Button>
           <p className="text-sm text-muted-foreground text-center">
             Belum punya akun?{" "}

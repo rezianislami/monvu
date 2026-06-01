@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Wallet,
   Coins,
@@ -76,8 +77,9 @@ function sortValue(a: Asset, key: SortKey): string | number {
 }
 
 export default function AssetsPage() {
-  const { assets, goldPricePerGram, pricesUpdatedAt, addAsset, updateAsset, deleteAsset } =
+  const { assets, goldPricePerGram, pricesUpdatedAt, addAsset, updateAsset, deleteAsset, isGuest } =
     useData();
+  const router = useRouter();
   const [filter, setFilter] = useState<AssetCategory | "all">("all");
 
   const [formOpen, setFormOpen] = useState(false);
@@ -147,6 +149,11 @@ export default function AssetsPage() {
   });
 
   const openAdd = () => {
+    // Guests can browse but not write — send them to register instead.
+    if (isGuest) {
+      router.push("/signup");
+      return;
+    }
     setEditing(null);
     setFormOpen(true);
   };

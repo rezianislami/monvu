@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Target,
   Shield,
@@ -43,7 +44,8 @@ const DEFAULT_MONTHLY_EXPENSE = 8_000_000;
 const MILESTONES = [25, 50, 75, 100];
 
 export default function GoalsPage() {
-  const { goals, assets, addGoal, updateGoal, deleteGoal } = useData();
+  const { goals, assets, addGoal, updateGoal, deleteGoal, isGuest } = useData();
+  const router = useRouter();
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Goal | null>(null);
@@ -97,6 +99,11 @@ export default function GoalsPage() {
   ];
 
   const openAdd = () => {
+    // Guests can browse but not write — send them to register instead.
+    if (isGuest) {
+      router.push("/signup");
+      return;
+    }
     setEditing(null);
     setFormOpen(true);
   };

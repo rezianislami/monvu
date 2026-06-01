@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
+import { exitGuest } from "@/lib/guest";
 import {
   Card,
   CardContent,
@@ -39,6 +40,8 @@ export default function SignupPage() {
       setError(error.message ?? "Gagal membuat akun");
       return;
     }
+    // Drop any guest flag so the new real session takes over.
+    exitGuest();
     router.push("/");
     router.refresh();
   };

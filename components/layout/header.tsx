@@ -13,6 +13,7 @@ import {
 import { formatRupiah, calculateNetWorth } from "@/lib/calculations";
 import { useData } from "@/lib/data-store";
 import { authClient } from "@/lib/auth-client";
+import { exitGuest } from "@/lib/guest";
 import { MobileNav } from "./mobile-nav";
 import { ThemeToggle } from "./theme-toggle";
 
@@ -24,15 +25,22 @@ function initials(name: string): string {
 
 export function Header() {
   const router = useRouter();
-  const { assets } = useData();
+  const { assets, isGuest } = useData();
   const { data: session } = authClient.useSession();
   // No liabilities tracked — net worth = total current value.
   const netWorth = calculateNetWorth(assets, []);
 
-  const name = session?.user?.name ?? "Pengguna";
+  const name = session?.user?.name ?? (isGuest ? "Tamu" : "Pengguna");
   const email = session?.user?.email ?? "";
 
   const handleSignOut = async () => {
+    // Guests have no real session — just drop the flag and return to login.
+    if (isGuest) {
+      exitGuest();
+      router.push("/login");
+      router.refresh();
+      return;
+    }
     await authClient.signOut();
     router.push("/login");
     router.refresh();
@@ -77,7 +85,7 @@ export function Header() {
               <DropdownMenuSeparator />
               <DropdownMenuItem variant="destructive" onClick={handleSignOut}>
                 <LogOut className="h-4 w-4" />
-                Keluar
+                {isGuest ? "Keluar Mode Tamu" : "Keluar"}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
