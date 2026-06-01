@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu } from "lucide-react";
+import { BookOpen, Menu } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { openOnboarding } from "@/components/onboarding/onboarding-modal";
 import { NAV_ITEMS } from "./nav-items";
 
 // Mobile-only nav drawer (hamburger → slide-in). Desktop uses <Sidebar />.
@@ -59,6 +60,18 @@ export function MobileNav() {
               </Link>
             );
           })}
+
+          <button
+            onClick={() => {
+              // Close the drawer first so it doesn't sit over the modal.
+              setOpen(false);
+              openOnboarding();
+            }}
+            className="flex w-full items-center gap-3 rounded-xl border-2 border-transparent px-3 py-2.5 font-mono text-xs font-bold uppercase tracking-wide text-[var(--nb-text-muted)] transition-colors hover:bg-[var(--nb-surface2)] hover:text-[var(--nb-text)]"
+          >
+            <BookOpen className="h-5 w-5 shrink-0" />
+            <span>Panduan</span>
+          </button>
         </nav>
       </SheetContent>
     </Sheet>

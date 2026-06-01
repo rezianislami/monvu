@@ -3,9 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronLeft, ChevronRight, MessageSquarePlus } from "lucide-react";
+import { BookOpen, ChevronLeft, ChevronRight, MessageSquarePlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FeedbackDialog } from "@/components/feedback/feedback-dialog";
+import { openOnboarding } from "@/components/onboarding/onboarding-modal";
 import { NAV_ITEMS } from "./nav-items";
 
 // Controlled by AppShell so the main content margin can track the width.
@@ -60,6 +61,21 @@ export function Sidebar({
           );
         })}
       </nav>
+
+      {/* Panduan — re-opens the onboarding tour on demand */}
+      <div className="px-3">
+        <button
+          onClick={openOnboarding}
+          title="Panduan"
+          className={cn(
+            "flex w-full items-center gap-3 rounded-xl border-2 border-transparent px-3 py-2.5 font-mono text-xs font-bold uppercase tracking-wide text-[var(--nb-text-muted)] transition-all duration-100 hover:bg-[var(--nb-surface2)] hover:text-[var(--nb-text)]",
+            collapsed && "justify-center"
+          )}
+        >
+          <BookOpen className="h-5 w-5 shrink-0" />
+          {!collapsed && <span>Panduan</span>}
+        </button>
+      </div>
 
       {/* Feedback — sits at the very bottom, just above the collapse control */}
       <div className="px-3 pb-1">

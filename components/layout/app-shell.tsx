@@ -8,6 +8,7 @@ import { useData } from "@/lib/data-store";
 import { Sidebar } from "./sidebar";
 import { Header } from "./header";
 import { PageSkeleton } from "./page-skeleton";
+import { OnboardingModal } from "@/components/onboarding/onboarding-modal";
 
 // Owns the sidebar collapsed state so the main content margin tracks the
 // sidebar width (240px ↔ 72px) — otherwise content keeps a 240px gap when
@@ -44,6 +45,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           {loading ? <PageSkeleton /> : children}
         </main>
       </div>
+      <OnboardingModal />
     </div>
   );
 }
