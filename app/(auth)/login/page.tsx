@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/common/password-input";
 import { GoogleIcon } from "@/components/common/google-icon";
+import { Separator } from "@/components/ui/separator";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -96,6 +97,11 @@ export default function LoginPage() {
           <Button type="submit" disabled={loading} className="w-full">
             {loading ? "Memproses…" : "Masuk"}
           </Button>
+          <div className="flex items-center gap-3">
+            <Separator className="flex-1" />
+            <span className="text-xs text-muted-foreground">atau</span>
+            <Separator className="flex-1" />
+          </div>
           <Button
             type="button"
             variant="outline"
