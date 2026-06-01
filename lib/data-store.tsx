@@ -21,6 +21,11 @@ import { toast } from "@/components/ui/toast";
 
 export type AssetInput = Omit<Asset, "id" | "created_at" | "updated_at">;
 export type GoalInput = Omit<Goal, "id">;
+export interface FeedbackInput {
+  category: "saran" | "masalah" | "pujian";
+  sentiment: number | null; // 1–5 emoji scale, optional
+  message: string;
+}
 
 interface DataContextValue {
   isGuest: boolean;
@@ -36,6 +41,9 @@ interface DataContextValue {
   addGoal: (data: GoalInput) => void;
   updateGoal: (id: string, data: GoalInput) => void;
   deleteGoal: (id: string) => void;
+  // Returns true on success so the dialog can close only when the POST lands
+  // (other mutators are fire-and-forget; feedback needs the result to decide).
+  submitFeedback: (data: FeedbackInput) => Promise<boolean>;
 }
 
 const DataContext = createContext<DataContextValue | null>(null);
@@ -231,6 +239,27 @@ export function DataProvider({
       .catch((e) => console.error("Gagal menghapus target:", e));
   };
 
+  const submitFeedback = async (data: FeedbackInput): Promise<boolean> => {
+    if (blockGuestWrite()) return false;
+    try {
+      await jsonFetch("/api/feedback", { method: "POST", body: JSON.stringify(data) });
+      toast.add({
+        type: "success",
+        title: "Masukan terkirim",
+        description: "Terima kasih! Masukanmu sangat membantu kami.",
+      });
+      return true;
+    } catch (e) {
+      console.error("Gagal mengirim masukan:", e);
+      toast.add({
+        type: "error",
+        title: "Gagal mengirim",
+        description: e instanceof Error ? e.message : "Coba lagi sebentar.",
+      });
+      return false;
+    }
+  };
+
   return (
     <DataContext.Provider
       value={{
@@ -247,6 +276,7 @@ export function DataProvider({
         addGoal,
         updateGoal,
         deleteGoal,
+        submitFeedback,
       }}
     >
       {children}

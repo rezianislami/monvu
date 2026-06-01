@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, MessageSquarePlus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { FeedbackDialog } from "@/components/feedback/feedback-dialog";
 import { NAV_ITEMS } from "./nav-items";
 
 // Controlled by AppShell so the main content margin can track the width.
@@ -16,6 +18,7 @@ export function Sidebar({
   onToggle: () => void;
 }) {
   const pathname = usePathname();
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   return (
     <aside
@@ -58,6 +61,21 @@ export function Sidebar({
         })}
       </nav>
 
+      {/* Feedback — sits at the very bottom, just above the collapse control */}
+      <div className="px-3 pb-1">
+        <button
+          onClick={() => setFeedbackOpen(true)}
+          title="Saran & Masukan"
+          className={cn(
+            "flex w-full items-center gap-3 rounded-xl border-2 border-transparent px-3 py-2.5 font-mono text-xs font-bold uppercase tracking-wide text-[var(--nb-text-muted)] transition-all duration-100 hover:bg-[var(--nb-surface2)] hover:text-[var(--nb-text)]",
+            collapsed && "justify-center"
+          )}
+        >
+          <MessageSquarePlus className="h-5 w-5 shrink-0" />
+          {!collapsed && <span>Saran</span>}
+        </button>
+      </div>
+
       {/* Collapse button */}
       <div className="p-3 border-t border-border/50">
         <button
@@ -67,6 +85,8 @@ export function Sidebar({
           {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </button>
       </div>
+
+      <FeedbackDialog open={feedbackOpen} onOpenChange={setFeedbackOpen} />
     </aside>
   );
 }

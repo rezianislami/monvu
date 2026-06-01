@@ -6,6 +6,7 @@ import {
   timestamp,
   bigint,
   doublePrecision,
+  smallint,
 } from "drizzle-orm/pg-core";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -112,6 +113,28 @@ export const goal = pgTable("goal", {
   targetAmount: bigint("target_amount", { mode: "number" }).notNull().default(0),
   currentAmount: bigint("current_amount", { mode: "number" }).notNull().default(0),
   targetDate: text("target_date").notNull(), // YYYY-MM-DD (matches the client)
+  createdAt: timestamp("created_at").$defaultFn(() => new Date()).notNull(),
+});
+
+// User-submitted feedback from the sidebar. `sentiment` is an optional 1–5
+// emoji scale (1 = 😞 … 5 = 🤩); message is required. We keep rows even after a
+// user is deleted is NOT desired here — feedback is per-user and cascades, same
+// as the rest of the app tables, to avoid orphaned PII.
+export const feedbackCategory = pgEnum("feedback_category", [
+  "saran",
+  "masalah",
+  "pujian",
+]);
+
+export const feedback = pgTable("feedback", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  category: feedbackCategory("category").notNull(),
+  // Nullable: emoji rating is optional, only the message is required.
+  sentiment: smallint("sentiment"),
+  message: text("message").notNull(),
   createdAt: timestamp("created_at").$defaultFn(() => new Date()).notNull(),
 });
 

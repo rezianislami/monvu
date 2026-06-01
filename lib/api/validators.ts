@@ -1,13 +1,16 @@
-import type { asset, goal } from "@/lib/db/schema";
+import type { asset, goal, feedback } from "@/lib/db/schema";
 
 type AssetRow = typeof asset.$inferSelect;
 type GoalRow = typeof goal.$inferSelect;
+type FeedbackRow = typeof feedback.$inferSelect;
 
 const ASSET_CATEGORIES = ["gold", "stock", "money_market", "obligasi", "custom"] as const;
 const GOAL_CATEGORIES = ["kpr", "car", "emergency", "pension", "custom"] as const;
+const FEEDBACK_CATEGORIES = ["saran", "masalah", "pujian"] as const;
 
 type AssetCategory = (typeof ASSET_CATEGORIES)[number];
 type GoalCategory = (typeof GOAL_CATEGORIES)[number];
+type FeedbackCategory = (typeof FEEDBACK_CATEGORIES)[number];
 
 export interface AssetInputDb {
   name: string;
@@ -27,6 +30,12 @@ export interface GoalInputDb {
   targetAmount: number;
   currentAmount: number;
   targetDate: string;
+}
+
+export interface FeedbackInputDb {
+  category: FeedbackCategory;
+  sentiment: number | null;
+  message: string;
 }
 
 type Parsed<T> = { ok: true; data: T } | { ok: false; error: string };
@@ -105,6 +114,31 @@ export function parseGoalInput(body: unknown): Parsed<GoalInputDb> {
   };
 }
 
+export function parseFeedbackInput(body: unknown): Parsed<FeedbackInputDb> {
+  if (!isRecord(body)) return { ok: false, error: "Body harus berupa objek" };
+  if (!FEEDBACK_CATEGORIES.includes(body.category as FeedbackCategory)) {
+    return { ok: false, error: "Kategori tidak valid" };
+  }
+  const message = typeof body.message === "string" ? body.message.trim() : "";
+  if (!message) return { ok: false, error: "Pesan wajib diisi" };
+  if (message.length > 2000) return { ok: false, error: "Pesan maksimal 2000 karakter" };
+
+  // sentiment is optional; when present it must be an integer 1–5.
+  const rawSentiment = toNumber(body.sentiment);
+  let sentiment: number | null = null;
+  if (rawSentiment !== null) {
+    if (!Number.isInteger(rawSentiment) || rawSentiment < 1 || rawSentiment > 5) {
+      return { ok: false, error: "Sentiment harus antara 1–5" };
+    }
+    sentiment = rawSentiment;
+  }
+
+  return {
+    ok: true,
+    data: { category: body.category as FeedbackCategory, sentiment, message },
+  };
+}
+
 // ── DB row → FE snake_case shape ─────────────────────────────────────────────
 export function assetToApi(row: AssetRow) {
   return {
@@ -131,5 +165,15 @@ export function goalToApi(row: GoalRow) {
     target_amount: row.targetAmount,
     current_amount: row.currentAmount,
     target_date: row.targetDate,
+  };
+}
+
+export function feedbackToApi(row: FeedbackRow) {
+  return {
+    id: row.id,
+    category: row.category,
+    sentiment: row.sentiment ?? undefined,
+    message: row.message,
+    created_at: row.createdAt.toISOString(),
   };
 }
